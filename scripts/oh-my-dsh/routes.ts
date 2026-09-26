@@ -61,3 +61,27 @@ export function formatRoutes(env: NodeJS.ProcessEnv): string[] {
       : `${role.padEnd(9)} ${route.provider}/${route.model}${route.effort === undefined ? '' : ` [${route.effort}]`}`
   })
 }
+
+
+const ROLE_COMMANDS: Readonly<Record<string, RouteRole>> = {
+  scout: 'scout',
+  worker: 'worker',
+  review: 'reviewer',
+  reviewer: 'reviewer',
+  architect: 'architect',
+}
+
+export function expandRoleShortcut(input: string): string | undefined {
+  const match = /^\/(scout|worker|review|reviewer|architect)\s+([\s\S]+)$/.exec(input.trim())
+  if (match === null) return undefined
+  const role = ROLE_COMMANDS[match[1] ?? '']
+  const task = match[2]?.trim()
+  if (role === undefined || task === undefined || task === '') return undefined
+  return [
+    `Immediately delegate the following task using the ${role} tool.`,
+    'Set run_in_background=false so this turn waits for the specialist result.',
+    'Use the specialist result directly; do not repeat the same work unless verification is needed.',
+    '',
+    task,
+  ].join('\n')
+}
