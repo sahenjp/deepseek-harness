@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { spawn } from 'node:child_process'
 import { pathToFileURL } from 'node:url'
-import { applyPersistedRoutes, formatRoutes, readPersistedRoutes, routeConfigPath } from './oh-my-dsh/routes.ts'
+import { applyPersistedRoutes, formatRoutes, parseRouteRole, parseRouteSelection, persistRoute, readPersistedRoutes, routeConfigPath } from './oh-my-dsh/routes.ts'
 
 export interface OhMyDshInvocation {
   readonly command: string
@@ -96,6 +96,8 @@ function printHelp(): void {
     'pnpm oh-my-dsh web [options]',
     'pnpm oh-my-dsh ask <task>',
     'pnpm oh-my-dsh routes',
+    'pnpm oh-my-dsh route <role> <provider>/<model> [effort]',
+    'pnpm oh-my-dsh route <role> inherit',
     'pnpm oh-my-dsh doctor',
   ].join('\n'))
 }
@@ -123,6 +125,11 @@ async function main(): Promise<void> {
     return
   }
 
+  if (argv[0] === '--help' || argv[0] === '-h' || argv[0] === 'help') {
+    printHelp()
+    return
+  }
+
   applyPersistedRoutes(process.env)
 
   if (argv[0] === 'routes') {
@@ -130,8 +137,14 @@ async function main(): Promise<void> {
     return
   }
 
-  if (argv[0] === '--help' || argv[0] === '-h' || argv[0] === 'help') {
-    printHelp()
+  if (argv[0] === 'route') {
+    const role = parseRouteRole(argv[1] ?? '')
+    if (role === undefined) throw new Error('route role must be scout, worker, reviewer, or architect')
+    const route = argv[2]
+    if (route === undefined) throw new Error('route requires <provider>/<model> or inherit')
+    if (route === 'inherit' || route === 'default') persistRoute(process.env, role)
+    else persistRoute(process.env, role, parseRouteSelection(route, argv[3]))
+    console.log(formatRoutes(process.env).find(line => line.startsWith(role)) ?? role)
     return
   }
 
