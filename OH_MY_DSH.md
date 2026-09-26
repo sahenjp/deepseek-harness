@@ -18,6 +18,10 @@ pnpm oh-my-dsh web --no-open
 # one-shot headless task
 pnpm oh-my-dsh ask "fix the failing tests"
 
+# persist a specialist model route
+pnpm oh-my-dsh route worker openrouter/anthropic/claude-sonnet-4 high
+pnpm oh-my-dsh routes
+
 # environment checks
 pnpm oh-my-dsh doctor
 ```
@@ -44,7 +48,7 @@ Built-in commands:
 /exit
 ```
 
-Tool calls and results are shown inline, reasoning is compacted for display, and the final assistant answer is printed normally. `/scout`, `/worker`, `/review`, and `/architect` are foreground specialist shortcuts: they delegate to the named role and wait for its result before the turn completes.
+Tool calls and results are shown inline, reasoning is compacted for display, step/token usage is shown when the provider reports it, and the final assistant answer is printed normally. `/scout`, `/worker`, `/review`, and `/architect` are foreground specialist shortcuts: they delegate to the named role and wait for its result before the turn completes.
 
 ## oh-my-dsh preset
 
@@ -88,7 +92,7 @@ export OMDSH_REVIEWER_EFFORT=high
 
 Supported role prefixes are `SCOUT`, `WORKER`, `REVIEWER`, and `ARCHITECT`, each with `_PROVIDER`, `_MODEL`, and optional `_EFFORT`. The main Agent keeps DSH's normal model selection and Web `/model` behavior.
 
-The provider route must already exist in DSH. Third-party routes can be configured through the existing Models / `llm-pi-ai` surface. An unset specialist route inherits the parent Agent's provider and model. TUI `/route` changes are persisted to `$DSH_HOME/oh-my-dsh/routes.json` and reused by later TUI, Web, and headless launches. Explicit `OMDSH_*` environment variables take precedence over persisted values.
+The provider route must already exist in DSH. Third-party routes can be configured through the existing Models / `llm-pi-ai` surface. An unset specialist route inherits the parent Agent's provider and model. TUI `/route` changes, or `pnpm oh-my-dsh route <role> <provider>/<model> [effort]`, are persisted to `$DSH_HOME/oh-my-dsh/routes.json` and reused by later TUI, Web, and headless launches. Use `pnpm oh-my-dsh route <role> inherit` to clear one persisted route. Explicit `OMDSH_*` environment variables take precedence over persisted values.
 
 ## Web additions
 
