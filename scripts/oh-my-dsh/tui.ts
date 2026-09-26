@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process'
 import { resolve } from 'node:path'
-import { createInterface } from 'node:readline'
+import { createInterface } from 'node:readline/promises'
 import { pathToFileURL } from 'node:url'
 import { formatRoutes, parseRouteRole, parseRouteSelection, setRoute } from './routes.ts'
 
@@ -145,11 +145,12 @@ export async function runTui(): Promise<void> {
   try {
     while (true) {
       const prompt = sessionId === undefined ? '❯ ' : '› '
-      const line = await new Promise<string | undefined>(resolveLine => {
-        rl.question(paint(ansi.yellow, prompt), resolveLine)
-        rl.once('close', () => resolveLine(undefined))
-      })
-      if (line === undefined) break
+      let line: string
+      try {
+        line = await rl.question(paint(ansi.yellow, prompt))
+      } catch {
+        break
+      }
       const trimmed = line.trim()
       if (trimmed === '') continue
       if (trimmed === '/exit' || trimmed === '/quit') break
