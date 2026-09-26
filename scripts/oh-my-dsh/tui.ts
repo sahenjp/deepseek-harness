@@ -85,6 +85,26 @@ async function runTurn(task: string, sessionId: string | undefined): Promise<Tur
       }
       continue
     }
+    if (event.type === 'status') {
+      const phase = typeof event.phase === 'string' ? event.phase : ''
+      if (phase === 'step_start') {
+        const step = typeof event.step === 'number' ? ` ${event.step}` : ''
+        console.log(paint(ansi.dim, `  · step${step}`))
+      } else if (phase === 'step_end' && record(event.usage)) {
+        const input = typeof event.usage.inputTokens === 'number' ? event.usage.inputTokens : undefined
+        const outputTokens = typeof event.usage.outputTokens === 'number' ? event.usage.outputTokens : undefined
+        const cache = typeof event.usage.cacheReadTokens === 'number' ? event.usage.cacheReadTokens : undefined
+        const parts = [
+          input === undefined ? undefined : `in ${input}`,
+          outputTokens === undefined ? undefined : `out ${outputTokens}`,
+          cache === undefined ? undefined : `cache ${cache}`,
+        ].filter((part): part is string => part !== undefined)
+        if (parts.length > 0) console.log(paint(ansi.dim, `    usage ${parts.join(' · ')}`))
+      } else if (phase === 'turn_end' && typeof event.reason === 'string' && event.reason !== 'completed') {
+        console.log(paint(ansi.dim, `  · ${event.reason}`))
+      }
+      continue
+    }
     if (event.type === 'thinking' && typeof event.text === 'string') {
       const compact = event.text.replace(/\s+/g, ' ').trim()
       if (compact !== '') console.log(paint(ansi.dim, `  … ${short(compact, 180)}`))
