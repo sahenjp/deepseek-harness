@@ -18,6 +18,10 @@ pnpm oh-my-dsh web --no-open
 # headlessで一発実行
 pnpm oh-my-dsh ask "失敗しているテストを調べて修正して"
 
+# role別モデルrouteを永続設定
+pnpm oh-my-dsh route worker openrouter/anthropic/claude-sonnet-4 high
+pnpm oh-my-dsh routes
+
 # 環境診断
 pnpm oh-my-dsh doctor
 ```
@@ -26,7 +30,7 @@ pnpm oh-my-dsh doctor
 
 `pnpm oh-my-dsh` は、DSH標準の headless JSON プロトコル上に軽量な対話UIを起動します。
 
-各ターンは独立した短命headlessプロセスですが、同じ永続Session IDを引き継ぐため、別のAgent runtimeを作らずに会話を継続できます。ツール呼び出し・ツール結果・短縮したreasoningを端末内に表示します。
+各ターンは独立した短命headlessプロセスですが、同じ永続Session IDを引き継ぐため、別のAgent runtimeを作らずに会話を継続できます。ツール呼び出し・ツール結果・短縮したreasoningに加え、stepと利用可能なtoken usageも端末内に表示します。
 
 組み込みコマンド:
 
@@ -105,7 +109,7 @@ OMDSH_ARCHITECT_*
 
 指定するprovider routeはDSH側に登録済みである必要があります。OpenRouterなどは既存のModels / `llm-pi-ai` 設定をそのまま利用できます。
 
-専門roleを未指定にした場合は、その時点の親Agentのprovider/modelを継承します。TUIの `/route` 変更は `$DSH_HOME/oh-my-dsh/routes.json` に保存され、次回のTUI・Web・headlessにも引き継がれます。起動時に `OMDSH_*` 環境変数が明示されている場合は、保存値より環境変数を優先します。
+専門roleを未指定にした場合は、その時点の親Agentのprovider/modelを継承します。TUIの `/route`、または `pnpm oh-my-dsh route <role> <provider>/<model> [effort]` の変更は `$DSH_HOME/oh-my-dsh/routes.json` に保存され、次回のTUI・Web・headlessにも引き継がれます。`pnpm oh-my-dsh route <role> inherit` で保存routeを解除できます。起動時に `OMDSH_*` 環境変数が明示されている場合は、保存値より環境変数を優先します。
 
 ## Web側の追加設定
 
