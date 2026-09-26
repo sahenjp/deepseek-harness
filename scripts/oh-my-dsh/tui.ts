@@ -55,6 +55,11 @@ async function runTurn(task: string, sessionId: string | undefined): Promise<Tur
     env: process.env,
     stdio: ['ignore', 'pipe', 'pipe'],
   })
+  if (child.stdout === null || child.stderr === null) throw new Error('headless child streams are unavailable')
+  const exit = new Promise<number>(resolveExit => {
+    child.once('exit', code => resolveExit(code ?? 1))
+    child.once('error', () => resolveExit(1))
+  })
   let discoveredSession = sessionId
   let emittedText = false
   let finalText = ''
@@ -113,10 +118,7 @@ async function runTurn(task: string, sessionId: string | undefined): Promise<Tur
     }
   }
 
-  const exitCode = await new Promise<number>(resolveExit => {
-    child.once('exit', code => resolveExit(code ?? 1))
-    child.once('error', () => resolveExit(1))
-  })
+  const exitCode = await exit
   if (!emittedText && finalText !== '') console.log(finalText)
   const diagnostic = errors.join('').trim()
   if (diagnostic !== '') console.error(paint(exitCode === 0 ? ansi.dim : ansi.red, diagnostic))
