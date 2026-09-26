@@ -1,8 +1,36 @@
-# oh-my-dsh headless defaults: use PTC presentation and expose the built-in
-# iterative Ralph and profile plugin-management tools.
+# oh-my-dsh headless layer: PTC plus role-routed specialist delegation.
+- id: system-prompt
+  config:
+    personaSuffix: Your working directory is {{cwd}}.
+    personaPrefix: >-
+      You are Oh My DSH, a terminal-first coding agent. Work from repository evidence and keep the main
+      context focused. Use scout for fast independent exploration, worker for bounded implementation,
+      reviewer for context-aware review, and architect for design decisions. Start independent specialists
+      in parallel when useful, then integrate their results in the main thread.
+
+- id: agent-default-model
+  config:
+    provider: !!js "process.env.OMDSH_MAIN_PROVIDER ?? 'deepseek-official'"
+    model: !!js "process.env.OMDSH_MAIN_MODEL ?? 'deepseek-flash'"
+    reasoningEffort: !!js "process.env.OMDSH_MAIN_EFFORT || undefined"
+
 - id: tools
   config:
     mode: ptc
+
+- id: tool-subagent
+  config:
+    provider: spawn
+    toolName: subagent
+    backgroundMode: continuable
+    maxDepth: 2
+
+- id: tool-subagent-fork
+  config:
+    provider: fork
+    toolName: subagent_fork
+    backgroundMode: continuable
+    maxDepth: 2
 
 - id: tool-ralph
   disabled: false
@@ -12,3 +40,52 @@
 
 - id: tool-plugin-manager
   disabled: false
+
+- insert:
+    - id: omdsh-scout
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: spawn
+        toolName: scout
+        backgroundMode: continuable
+        maxDepth: 2
+        persona: >-
+          You are the Oh My DSH scout. Inspect quickly and independently. Prefer search, reads,
+          diagnostics, and small experiments. Return concrete evidence and avoid unrelated edits.
+        agentOptions: !!js "process.env.OMDSH_SCOUT_MODEL ? ({ provider: process.env.OMDSH_SCOUT_PROVIDER ?? (process.env.OMDSH_MAIN_PROVIDER ?? 'deepseek-official'), model: process.env.OMDSH_SCOUT_MODEL, reasoningEffort: process.env.OMDSH_SCOUT_EFFORT || undefined }) : undefined"
+
+    - id: omdsh-worker
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: spawn
+        toolName: worker
+        backgroundMode: continuable
+        maxDepth: 2
+        persona: >-
+          You are the Oh My DSH worker. Own one bounded implementation task end to end. Inspect first,
+          make the smallest coherent change, run focused checks, and report exact results.
+        agentOptions: !!js "process.env.OMDSH_WORKER_MODEL ? ({ provider: process.env.OMDSH_WORKER_PROVIDER ?? (process.env.OMDSH_MAIN_PROVIDER ?? 'deepseek-official'), model: process.env.OMDSH_WORKER_MODEL, reasoningEffort: process.env.OMDSH_WORKER_EFFORT || undefined }) : undefined"
+
+    - id: omdsh-reviewer
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: fork
+        toolName: reviewer
+        backgroundMode: continuable
+        maxDepth: 1
+        persona: >-
+          You are the Oh My DSH reviewer. Review inherited context and repository state for correctness,
+          regressions, security, missing tests, and unnecessary complexity. Lead with actionable findings.
+        agentOptions: !!js "process.env.OMDSH_REVIEWER_MODEL ? ({ provider: process.env.OMDSH_REVIEWER_PROVIDER ?? (process.env.OMDSH_MAIN_PROVIDER ?? 'deepseek-official'), model: process.env.OMDSH_REVIEWER_MODEL, reasoningEffort: process.env.OMDSH_REVIEWER_EFFORT || undefined }) : undefined"
+
+    - id: omdsh-architect
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: fork
+        toolName: architect
+        backgroundMode: continuable
+        maxDepth: 2
+        persona: >-
+          You are the Oh My DSH architect. Resolve design questions, interfaces, migration paths,
+          tradeoffs, and failure modes from inherited context. Return decision-ready guidance.
+        agentOptions: !!js "process.env.OMDSH_ARCHITECT_MODEL ? ({ provider: process.env.OMDSH_ARCHITECT_PROVIDER ?? (process.env.OMDSH_MAIN_PROVIDER ?? 'deepseek-official'), model: process.env.OMDSH_ARCHITECT_MODEL, reasoningEffort: process.env.OMDSH_ARCHITECT_EFFORT || undefined }) : undefined"
