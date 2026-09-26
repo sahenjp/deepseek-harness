@@ -88,7 +88,7 @@ export OMDSH_REVIEWER_EFFORT=high
 
 Supported role prefixes are `SCOUT`, `WORKER`, `REVIEWER`, and `ARCHITECT`, each with `_PROVIDER`, `_MODEL`, and optional `_EFFORT`. The main Agent keeps DSH's normal model selection and Web `/model` behavior.
 
-The provider route must already exist in DSH. Third-party routes can be configured through the existing Models / `llm-pi-ai` surface. An unset specialist route inherits the parent Agent's provider and model.
+The provider route must already exist in DSH. Third-party routes can be configured through the existing Models / `llm-pi-ai` surface. An unset specialist route inherits the parent Agent's provider and model. TUI `/route` changes are persisted to `$DSH_HOME/oh-my-dsh/routes.json` and reused by later TUI, Web, and headless launches. Explicit `OMDSH_*` environment variables take precedence over persisted values.
 
 ## Web additions
 
