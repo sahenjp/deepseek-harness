@@ -1,4 +1,4 @@
-export const ROUTE_ROLES = ['main', 'scout', 'worker', 'reviewer', 'architect'] as const
+export const ROUTE_ROLES = ['scout', 'worker', 'reviewer', 'architect'] as const
 
 export type RouteRole = typeof ROUTE_ROLES[number]
 
@@ -9,7 +9,6 @@ export interface RouteSelection {
 }
 
 const PREFIX: Record<RouteRole, string> = {
-  main: 'OMDSH_MAIN',
   scout: 'OMDSH_SCOUT',
   worker: 'OMDSH_WORKER',
   reviewer: 'OMDSH_REVIEWER',
@@ -57,9 +56,8 @@ export function getRoute(env: NodeJS.ProcessEnv, role: RouteRole): RouteSelectio
 export function formatRoutes(env: NodeJS.ProcessEnv): string[] {
   return ROUTE_ROLES.map(role => {
     const route = getRoute(env, role)
-    if (route === undefined && role === 'main') return `${role.padEnd(9)} deepseek-official/deepseek-flash (default)`
     return route === undefined
-      ? `${role.padEnd(9)} inherit`
+      ? `${role.padEnd(9)} inherit parent model`
       : `${role.padEnd(9)} ${route.provider}/${route.model}${route.effort === undefined ? '' : ` [${route.effort}]`}`
   })
 }
