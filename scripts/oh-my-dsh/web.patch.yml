@@ -109,6 +109,7 @@
                 config:
                   provider: spawn
                   toolName: subagent
+                  modelSelectionSettings: true
                   backgroundMode: continuable
                   maxDepth: 2
               - id: tool-subagent-fork
@@ -118,6 +119,22 @@
                   toolName: subagent_fork
                   backgroundMode: continuable
                   maxDepth: 2
+              - id: tool-subagent-codex
+                name: '@deepseek-ai/dsh-tool-subagent'
+                disabled: true
+                config:
+                  provider: codex
+                  toolName: subagent_codex
+                  backgroundMode: one-shot
+                  maxDepth: provider-managed
+              - id: tool-subagent-claude-code
+                name: '@deepseek-ai/dsh-tool-subagent'
+                disabled: true
+                config:
+                  provider: claude-code
+                  toolName: subagent_claude_code
+                  backgroundMode: one-shot
+                  maxDepth: provider-managed
               - id: oh-my-scout
                 name: '@deepseek-ai/dsh-tool-subagent'
                 config:
