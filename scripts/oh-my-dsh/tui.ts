@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process'
 import { resolve } from 'node:path'
 import { createInterface } from 'node:readline/promises'
 import { pathToFileURL } from 'node:url'
-import { expandRoleShortcut, formatRoutes, parseRouteRole, parseRouteSelection, setRoute } from './routes.ts'
+import { expandRoleShortcut, formatRoutes, parseRouteRole, parseRouteSelection, persistRoute } from './routes.ts'
 
 const ROOT = resolve(import.meta.dirname, '../..')
 const CLI = resolve(ROOT, 'apps/cli/src/bin.ts')
@@ -201,8 +201,8 @@ export async function runTui(): Promise<void> {
           continue
         }
         try {
-          if (routeText === 'inherit' || routeText === 'default') setRoute(process.env, role)
-          else setRoute(process.env, role, parseRouteSelection(routeText, effort))
+          if (routeText === 'inherit' || routeText === 'default') persistRoute(process.env, role)
+          else persistRoute(process.env, role, parseRouteSelection(routeText, effort))
           console.log(formatRoutes(process.env).find(row => row.startsWith(role)) ?? role)
         } catch (error) {
           console.error(error instanceof Error ? error.message : String(error))
