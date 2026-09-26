@@ -1,0 +1,14 @@
+# oh-my-dsh headless defaults: use PTC presentation and expose the built-in
+# iterative Ralph and profile plugin-management tools.
+- id: tools
+  config:
+    mode: ptc
+
+- id: tool-ralph
+  disabled: false
+  config:
+    subagentProvider: spawn
+    maxRounds: 64
+
+- id: tool-plugin-manager
+  disabled: false
