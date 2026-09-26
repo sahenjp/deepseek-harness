@@ -58,6 +58,7 @@ describe('oh-my-dsh routing', () => {
     expect(formatRoutes(env).find(line => line.startsWith('reviewer'))).toContain('openrouter/openai/gpt-5')
     setRoute(env, 'reviewer')
     expect(getRoute(env, 'reviewer')).toBeUndefined()
+    expect(formatRoutes(env).find(line => line.startsWith('reviewer'))).toContain('inherit parent model')
   })
 })
 
