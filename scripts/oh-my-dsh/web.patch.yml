@@ -1,12 +1,6 @@
 # oh-my-dsh Web profile overlay.
 # Keeps upstream Web/session services and adds an opinionated terminal-first preset.
 
-- id: agent-default-model
-  config:
-    provider: !!js process.env.OMDSH_MAIN_PROVIDER ?? 'deepseek-official'
-    model: !!js process.env.OMDSH_MAIN_MODEL ?? 'deepseek-flash'
-    reasoningEffort: !!js process.env.OMDSH_MAIN_EFFORT
-
 - id: agent-preset-registry
   config:
     default: oh-my-dsh
