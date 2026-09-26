@@ -1,18 +1,11 @@
-# oh-my-dsh headless layer: PTC plus role-routed specialist delegation.
-- id: system-prompt
-  config:
-    personaSuffix: Your working directory is {{cwd}}.
-    personaPrefix: >-
-      You are Oh My DSH, a terminal-first coding agent. Work from repository evidence and keep the main
-      context focused. Use scout for fast independent exploration, worker for bounded implementation,
-      reviewer for context-aware review, and architect for design decisions. Start independent specialists
-      in parallel when useful, then integrate their results in the main thread.
+# oh-my-dsh headless overlay.
+# Headless has no agent-preset registry, so the role tools live directly in its agent plane.
 
 - id: agent-default-model
   config:
-    provider: !!js "process.env.OMDSH_MAIN_PROVIDER ?? 'deepseek-official'"
-    model: !!js "process.env.OMDSH_MAIN_MODEL ?? 'deepseek-flash'"
-    reasoningEffort: !!js "process.env.OMDSH_MAIN_EFFORT || undefined"
+    provider: !!js process.env.OMDSH_MAIN_PROVIDER ?? 'deepseek-official'
+    model: !!js process.env.OMDSH_MAIN_MODEL ?? 'deepseek-flash'
+    reasoningEffort: !!js process.env.OMDSH_MAIN_EFFORT
 
 - id: tools
   config:
@@ -42,7 +35,7 @@
   disabled: false
 
 - insert:
-    - id: omdsh-scout
+    - id: oh-my-scout
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
         provider: spawn
@@ -50,11 +43,10 @@
         backgroundMode: continuable
         maxDepth: 2
         persona: >-
-          You are the Oh My DSH scout. Inspect quickly and independently. Prefer search, reads,
-          diagnostics, and small experiments. Return concrete evidence and avoid unrelated edits.
-        agentOptions: !!js "process.env.OMDSH_SCOUT_MODEL ? ({ provider: process.env.OMDSH_SCOUT_PROVIDER ?? (process.env.OMDSH_MAIN_PROVIDER ?? 'deepseek-official'), model: process.env.OMDSH_SCOUT_MODEL, reasoningEffort: process.env.OMDSH_SCOUT_EFFORT || undefined }) : undefined"
-
-    - id: omdsh-worker
+          You are Scout. Explore quickly and read broadly. Do not edit files.
+          Return concrete paths, symbols, commands, risks, and a concise recommendation.
+        agentOptions: !!js "process.env.OMDSH_SCOUT_PROVIDER && process.env.OMDSH_SCOUT_MODEL ? { provider: process.env.OMDSH_SCOUT_PROVIDER, model: process.env.OMDSH_SCOUT_MODEL, ...(process.env.OMDSH_SCOUT_EFFORT ? { reasoningEffort: process.env.OMDSH_SCOUT_EFFORT } : {}) } : undefined"
+    - id: oh-my-worker
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
         provider: spawn
@@ -62,30 +54,30 @@
         backgroundMode: continuable
         maxDepth: 2
         persona: >-
-          You are the Oh My DSH worker. Own one bounded implementation task end to end. Inspect first,
-          make the smallest coherent change, run focused checks, and report exact results.
-        agentOptions: !!js "process.env.OMDSH_WORKER_MODEL ? ({ provider: process.env.OMDSH_WORKER_PROVIDER ?? (process.env.OMDSH_MAIN_PROVIDER ?? 'deepseek-official'), model: process.env.OMDSH_WORKER_MODEL, reasoningEffort: process.env.OMDSH_WORKER_EFFORT || undefined }) : undefined"
-
-    - id: omdsh-reviewer
+          You are Worker. Implement the delegated scope completely, keep changes minimal,
+          run relevant checks, and report files changed plus verification results.
+        agentOptions: !!js "process.env.OMDSH_WORKER_PROVIDER && process.env.OMDSH_WORKER_MODEL ? { provider: process.env.OMDSH_WORKER_PROVIDER, model: process.env.OMDSH_WORKER_MODEL, ...(process.env.OMDSH_WORKER_EFFORT ? { reasoningEffort: process.env.OMDSH_WORKER_EFFORT } : {}) } : undefined"
+    - id: oh-my-reviewer
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
-        provider: fork
+        provider: spawn
         toolName: reviewer
         backgroundMode: continuable
-        maxDepth: 1
+        maxDepth: 2
         persona: >-
-          You are the Oh My DSH reviewer. Review inherited context and repository state for correctness,
-          regressions, security, missing tests, and unnecessary complexity. Lead with actionable findings.
-        agentOptions: !!js "process.env.OMDSH_REVIEWER_MODEL ? ({ provider: process.env.OMDSH_REVIEWER_PROVIDER ?? (process.env.OMDSH_MAIN_PROVIDER ?? 'deepseek-official'), model: process.env.OMDSH_REVIEWER_MODEL, reasoningEffort: process.env.OMDSH_REVIEWER_EFFORT || undefined }) : undefined"
-
-    - id: omdsh-architect
+          You are Reviewer. Assume the implementation may be wrong. Inspect correctness,
+          security, regressions, edge cases, tests, and maintainability. Do not change files
+          unless the parent explicitly delegates a repair.
+        agentOptions: !!js "process.env.OMDSH_REVIEWER_PROVIDER && process.env.OMDSH_REVIEWER_MODEL ? { provider: process.env.OMDSH_REVIEWER_PROVIDER, model: process.env.OMDSH_REVIEWER_MODEL, ...(process.env.OMDSH_REVIEWER_EFFORT ? { reasoningEffort: process.env.OMDSH_REVIEWER_EFFORT } : {}) } : undefined"
+    - id: oh-my-architect
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
-        provider: fork
+        provider: spawn
         toolName: architect
         backgroundMode: continuable
         maxDepth: 2
         persona: >-
-          You are the Oh My DSH architect. Resolve design questions, interfaces, migration paths,
-          tradeoffs, and failure modes from inherited context. Return decision-ready guidance.
-        agentOptions: !!js "process.env.OMDSH_ARCHITECT_MODEL ? ({ provider: process.env.OMDSH_ARCHITECT_PROVIDER ?? (process.env.OMDSH_MAIN_PROVIDER ?? 'deepseek-official'), model: process.env.OMDSH_ARCHITECT_MODEL, reasoningEffort: process.env.OMDSH_ARCHITECT_EFFORT || undefined }) : undefined"
+          You are Architect. Focus on system boundaries, data flow, API contracts,
+          failure modes, performance, and migration cost. Prefer the smallest design
+          that remains extensible. Do not edit files.
+        agentOptions: !!js "process.env.OMDSH_ARCHITECT_PROVIDER && process.env.OMDSH_ARCHITECT_MODEL ? { provider: process.env.OMDSH_ARCHITECT_PROVIDER, model: process.env.OMDSH_ARCHITECT_MODEL, ...(process.env.OMDSH_ARCHITECT_EFFORT ? { reasoningEffort: process.env.OMDSH_ARCHITECT_EFFORT } : {}) } : undefined"
