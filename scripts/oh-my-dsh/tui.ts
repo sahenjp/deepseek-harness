@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process'
 import { resolve } from 'node:path'
 import { createInterface } from 'node:readline/promises'
 import { pathToFileURL } from 'node:url'
-import { formatRoutes, parseRouteRole, parseRouteSelection, setRoute } from './routes.ts'
+import { expandRoleShortcut, formatRoutes, parseRouteRole, parseRouteSelection, setRoute } from './routes.ts'
 
 const ROOT = resolve(import.meta.dirname, '../..')
 const CLI = resolve(ROOT, 'apps/cli/src/bin.ts')
@@ -132,6 +132,11 @@ function printHelp(): void {
     '/session                           show current session id',
     '/resume <session-id>               continue an existing headless session',
     '/routes                            show model routes',
+    '/scout <task>                       run Scout and wait',
+    '/worker <task>                      run Worker and wait',
+    '/review <task>                      run Reviewer and wait',
+    '/architect <task>                   run Architect and wait',
+    '/clear                              clear the terminal',
     '/route <role> <provider>/<model> [effort]',
     '/route <role> inherit              inherit/default route',
     '/exit                              quit',
@@ -161,9 +166,13 @@ export async function runTui(): Promise<void> {
         printHelp()
         continue
       }
-      if (trimmed === '/new' || trimmed === '/clear') {
+      if (trimmed === '/new') {
         sessionId = undefined
         console.log(paint(ansi.dim, 'new session'))
+        continue
+      }
+      if (trimmed === '/clear') {
+        if (process.stdout.isTTY) process.stdout.write('\x1b[2J\x1b[H')
         continue
       }
       if (trimmed === '/session') {
@@ -200,7 +209,7 @@ export async function runTui(): Promise<void> {
         }
         continue
       }
-      const result = await runTurn(line, sessionId)
+      const result = await runTurn(expandRoleShortcut(line) ?? line, sessionId)
       sessionId = result.sessionId
       if (result.exitCode !== 0) console.log(paint(ansi.red, `turn exited ${result.exitCode}`))
     }
