@@ -105,7 +105,7 @@ OMDSH_ARCHITECT_*
 
 指定するprovider routeはDSH側に登録済みである必要があります。OpenRouterなどは既存のModels / `llm-pi-ai` 設定をそのまま利用できます。
 
-専門roleを未指定にした場合は、その時点の親Agentのprovider/modelを継承します。
+専門roleを未指定にした場合は、その時点の親Agentのprovider/modelを継承します。TUIの `/route` 変更は `$DSH_HOME/oh-my-dsh/routes.json` に保存され、次回のTUI・Web・headlessにも引き継がれます。起動時に `OMDSH_*` 環境変数が明示されている場合は、保存値より環境変数を優先します。
 
 ## Web側の追加設定
 
