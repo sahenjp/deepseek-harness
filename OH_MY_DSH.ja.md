@@ -36,12 +36,17 @@ pnpm oh-my-dsh doctor
 /session
 /resume <session-id>
 /routes
+/scout <task>
+/worker <task>
+/review <task>
+/architect <task>
 /route <role> <provider>/<model> [effort]
 /route <role> inherit
+/clear
 /exit
 ```
 
-`/new` で新しいセッションを始め、`/session` で現在のSession IDを確認できます。
+`/new` で新しいセッションを始め、`/session` で現在のSession IDを確認できます。`/scout`・`/worker`・`/review`・`/architect` は対応する専門サブエージェントを foreground で呼び、結果が返るまでそのターンを待ちます。
 
 ## 独自プリセット
 
