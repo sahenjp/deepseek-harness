@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { spawn } from 'node:child_process'
 import { pathToFileURL } from 'node:url'
-import { formatRoutes } from './oh-my-dsh/routes.ts'
+import { applyPersistedRoutes, formatRoutes, readPersistedRoutes, routeConfigPath } from './oh-my-dsh/routes.ts'
 
 export interface OhMyDshInvocation {
   readonly command: string
@@ -65,18 +65,29 @@ export function buildOhMyDshInvocation(
 }
 
 function doctor(): number {
+  const routeEnv = { ...process.env }
+  let routeConfigOk = true
+  let routeConfigDetail = routeConfigPath(routeEnv)
+  try {
+    readPersistedRoutes(routeEnv)
+    applyPersistedRoutes(routeEnv)
+  } catch (error) {
+    routeConfigOk = false
+    routeConfigDetail = error instanceof Error ? error.message : String(error)
+  }
   const checks: readonly [string, boolean, string][] = [
     ['Node.js', nodeSupported(), process.versions.node],
     ['dsh source', existsSync(CLI), CLI],
     ['Web patch', existsSync(WEB_PATCH), WEB_PATCH],
     ['Headless patch', existsSync(HEADLESS_PATCH), HEADLESS_PATCH],
     ['TUI', existsSync(TUI), TUI],
+    ['Route config', routeConfigOk, routeConfigDetail],
     ['DeepSeek key', Boolean(process.env.DEEPSEEK_API_KEY), process.env.DEEPSEEK_API_KEY ? 'configured' : 'not configured'],
   ]
   for (const [name, ok, detail] of checks) console.log(`${ok ? 'OK  ' : 'WARN'} ${name}: ${detail}`)
   console.log('\nRoutes')
-  for (const route of formatRoutes(process.env)) console.log(`  ${route}`)
-  return checks.slice(0, 5).every(([, ok]) => ok) ? 0 : 1
+  for (const route of formatRoutes(routeEnv)) console.log(`  ${route}`)
+  return checks.slice(0, 6).every(([, ok]) => ok) ? 0 : 1
 }
 
 function printHelp(): void {
@@ -111,6 +122,8 @@ async function main(): Promise<void> {
     process.exitCode = doctor()
     return
   }
+
+  applyPersistedRoutes(process.env)
 
   if (argv[0] === 'routes') {
     for (const route of formatRoutes(process.env)) console.log(route)
