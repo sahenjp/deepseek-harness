@@ -130,6 +130,7 @@ function printHelp(): void {
     '/help                              commands',
     '/new                               start a new session',
     '/session                           show current session id',
+    '/resume <session-id>               continue an existing headless session',
     '/routes                            show model routes',
     '/route <role> <provider>/<model> [effort]',
     '/route <role> inherit              inherit/default route',
@@ -167,6 +168,16 @@ export async function runTui(): Promise<void> {
       }
       if (trimmed === '/session') {
         console.log(sessionId ?? 'new')
+        continue
+      }
+      if (trimmed.startsWith('/resume ')) {
+        const wanted = trimmed.slice('/resume '.length)
+        if (wanted.trim() === '') {
+          console.error('session id is required')
+          continue
+        }
+        sessionId = wanted
+        console.log(paint(ansi.dim, `resume ${sessionId}`))
         continue
       }
       if (trimmed === '/routes') {
