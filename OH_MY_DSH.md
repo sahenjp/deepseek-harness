@@ -34,12 +34,17 @@ Built-in commands:
 /session
 /resume <session-id>
 /routes
+/scout <task>
+/worker <task>
+/review <task>
+/architect <task>
 /route <role> <provider>/<model> [effort]
 /route <role> inherit
+/clear
 /exit
 ```
 
-Tool calls and results are shown inline, reasoning is compacted for display, and the final assistant answer is printed normally.
+Tool calls and results are shown inline, reasoning is compacted for display, and the final assistant answer is printed normally. `/scout`, `/worker`, `/review`, and `/architect` are foreground specialist shortcuts: they delegate to the named role and wait for its result before the turn completes.
 
 ## oh-my-dsh preset
 
