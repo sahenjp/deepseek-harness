@@ -62,7 +62,7 @@ PTCを使った通常のcoding環境に加えて、Workflow、Ralph、Cordis ins
 
 ## モデルルーティング
 
-roleごとに別モデルへ振れます。指定がなければ親Agentのモデルを継承します。
+4つの専門roleだけを別モデルへ振れます。指定がなければ親Agentのモデルを継承し、main Agentのモデル選択はDSH標準の設定を尊重します。
 
 TUIから変更する例:
 
@@ -75,9 +75,6 @@ TUIから変更する例:
 Webやheadless起動前に環境変数で設定することもできます。
 
 ```sh
-export OMDSH_MAIN_PROVIDER=deepseek-official
-export OMDSH_MAIN_MODEL=deepseek-flash
-
 export OMDSH_SCOUT_PROVIDER=openrouter
 export OMDSH_SCOUT_MODEL=google/gemini-2.5-flash
 
@@ -90,10 +87,9 @@ export OMDSH_REVIEWER_MODEL=openai/gpt-5
 export OMDSH_REVIEWER_EFFORT=high
 ```
 
-利用できるprefixは次の5つです。
+利用できるprefixは次の4つです。main AgentのモデルはDSH本来のモデル設定・Webの `/model` をそのまま使います。
 
 ```text
-OMDSH_MAIN_*
 OMDSH_SCOUT_*
 OMDSH_WORKER_*
 OMDSH_REVIEWER_*
@@ -104,7 +100,7 @@ OMDSH_ARCHITECT_*
 
 指定するprovider routeはDSH側に登録済みである必要があります。OpenRouterなどは既存のModels / `llm-pi-ai` 設定をそのまま利用できます。
 
-main routeの変更は新規Sessionに適用されます。TUIでmainを変えた場合は `/new` を実行してください。
+専門roleを未指定にした場合は、その時点の親Agentのprovider/modelを継承します。
 
 ## Web側の追加設定
 
