@@ -2,20 +2,117 @@
 
 English | [日本語](OH_MY_DSH.ja.md)
 
-`oh-my-dsh` is an opinionated launcher layer for this fork. It keeps `dsh` as the only application launcher and applies small profile overlays instead of maintaining a second Harness runtime.
+`oh-my-dsh` is the terminal-first opinionated layer for this fork. It keeps upstream `dsh` as the only application launcher, then adds a small TUI, a custom Web preset, role-based continuable subagents, and environment-driven model routing.
 
-## Usage
+## Quick start
 
 ```sh
 pnpm install
+
+# terminal UI (default)
 pnpm oh-my-dsh
-pnpm oh-my-dsh -- --no-open
+
+# Web UI with the oh-my-dsh preset
+pnpm oh-my-dsh web --no-open
+
+# one-shot headless task
 pnpm oh-my-dsh ask "fix the failing tests"
+
+# environment checks
 pnpm oh-my-dsh doctor
 ```
 
-Web sessions default to the built-in `ptc` preset, scheduling is enabled, and session full-text search opens a durable SQLite index on first search. A saved preset selection still wins over the deployment default.
+## Terminal UI
 
-`ask` runs the shipped headless profile with PTC presentation. Its overlay also enables the built-in Ralph and profile plugin-management tools.
+The default command starts a lightweight interactive terminal surface on top of the shipped headless JSON protocol. Each turn starts a bounded headless process while reusing the same persisted DSH session id, so conversation history remains durable without maintaining a second Agent runtime.
 
-The overlays live in `scripts/oh-my-dsh/`. They only replace configuration owned by existing DSH rows, so upstream runtime code remains unchanged and the fork can continue to merge upstream changes with a small conflict surface.
+Built-in commands:
+
+```text
+/help
+/new
+/session
+/routes
+/route <role> <provider>/<model> [effort]
+/route <role> inherit
+/exit
+```
+
+Tool calls and results are shown inline, reasoning is compacted for display, and the final assistant answer is printed normally.
+
+## oh-my-dsh preset
+
+Web defaults to the custom `oh-my-dsh` preset. It keeps the PTC presentation model and the normal coding surface while enabling workflow, Ralph, Cordis inspection, plugin management, and role-based delegation.
+
+The role tools are:
+
+- `scout` — fast read-only exploration and evidence gathering.
+- `worker` — scoped implementation plus verification.
+- `reviewer` — adversarial correctness, security, regression, and test review.
+- `architect` — design, boundaries, failure modes, performance, and migration cost.
+- `subagent` — general fresh continuable child.
+- `subagent_fork` — continuable child seeded with completed parent turns.
+
+Role children default to the parent model. They can be routed independently through environment variables.
+
+## Model routing
+
+The TUI can change routes for subsequent child processes:
+
+```text
+/route worker openrouter/anthropic/claude-sonnet-4 high
+/route reviewer openrouter/openai/gpt-5 high
+/route scout inherit
+```
+
+The same routing can be configured before Web or headless startup:
+
+```sh
+export OMDSH_MAIN_PROVIDER=deepseek-official
+export OMDSH_MAIN_MODEL=deepseek-flash
+
+export OMDSH_SCOUT_PROVIDER=openrouter
+export OMDSH_SCOUT_MODEL=google/gemini-2.5-flash
+
+export OMDSH_WORKER_PROVIDER=openrouter
+export OMDSH_WORKER_MODEL=anthropic/claude-sonnet-4
+export OMDSH_WORKER_EFFORT=high
+
+export OMDSH_REVIEWER_PROVIDER=openrouter
+export OMDSH_REVIEWER_MODEL=openai/gpt-5
+export OMDSH_REVIEWER_EFFORT=high
+```
+
+Supported role prefixes are `MAIN`, `SCOUT`, `WORKER`, `REVIEWER`, and `ARCHITECT`, each with `_PROVIDER`, `_MODEL`, and optional `_EFFORT`.
+
+The provider route must already exist in DSH. Third-party routes can be configured through the existing Models / `llm-pi-ai` surface. Changing the main route affects fresh sessions; use `/new` in the TUI after changing it.
+
+## Web additions
+
+The Web overlay also enables scheduling and durable full-text session search. The SQLite search index is opened on first search at `$DSH_HOME/session-search.sqlite`. A user-saved preset selection still overrides the deployment default.
+
+## Architecture
+
+```text
+oh-my-dsh TUI
+  └─ dsh --profile headless --json
+      └─ persisted session id
+
+oh-my-dsh Web
+  └─ dsh --profile web
+      └─ oh-my-dsh preset
+          ├─ scout
+          ├─ worker
+          ├─ reviewer
+          └─ architect
+```
+
+No second Agent loop or alternate DSH runtime is introduced. The fork-specific behavior stays in `scripts/oh-my-dsh/` overlays and launcher code so upstream merges keep a small conflict surface.
+
+## Node.js
+
+The fork follows the repository engine requirement:
+
+```text
+^22.19.0 or >=24.0.0
+```
