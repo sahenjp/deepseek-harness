@@ -1,0 +1,19 @@
+# oh-my-dsh Web defaults: prefer PTC for new sessions and turn on the
+# built-in scheduling and durable full-text session-search surfaces.
+- id: agent-preset-registry
+  config:
+    default: ptc
+
+- id: session-query-sqlite
+  config:
+    path: !!js dshHomePath('session-search.sqlite')
+    openAt: first-search
+
+- id: time-context
+  disabled: false
+
+- id: schedule
+  disabled: false
+
+- id: ui-schedule
+  disabled: false
