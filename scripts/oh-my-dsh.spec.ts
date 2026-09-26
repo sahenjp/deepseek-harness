@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import * as yaml from 'js-yaml'
 import { entryListSchema } from '@deepseek-ai/cordis-plugin-include'
 import { buildOhMyDshInvocation, nodeSupported } from './oh-my-dsh.ts'
-import { formatRoutes, getRoute, parseRouteSelection, setRoute } from './oh-my-dsh/routes.ts'
+import { expandRoleShortcut, formatRoutes, getRoute, parseRouteSelection, setRoute } from './oh-my-dsh/routes.ts'
 
 describe('oh-my-dsh launcher', () => {
   it('uses the terminal UI by default', () => {
@@ -45,6 +45,14 @@ describe('oh-my-dsh routing', () => {
       model: 'anthropic/claude-sonnet-4',
       effort: 'high',
     })
+  })
+
+  it('expands role shortcuts into foreground delegation', () => {
+    const prompt = expandRoleShortcut('/review inspect the auth diff')
+    expect(prompt).toContain('reviewer tool')
+    expect(prompt).toContain('run_in_background=false')
+    expect(prompt).toContain('inspect the auth diff')
+    expect(expandRoleShortcut('/review')).toBeUndefined()
   })
 
   it('sets and clears role routes', () => {
