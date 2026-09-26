@@ -1,10 +1,11 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import * as yaml from 'js-yaml'
 import { entryListSchema } from '@deepseek-ai/cordis-plugin-include'
 import { buildOhMyDshInvocation, nodeSupported } from './oh-my-dsh.ts'
-import { expandRoleShortcut, formatRoutes, getRoute, parseRouteSelection, setRoute } from './oh-my-dsh/routes.ts'
+import { applyPersistedRoutes, expandRoleShortcut, formatRoutes, getRoute, parseRouteSelection, persistRoute, readPersistedRoutes, setRoute } from './oh-my-dsh/routes.ts'
 
 describe('oh-my-dsh launcher', () => {
   it('uses the terminal UI by default', () => {
@@ -53,6 +54,35 @@ describe('oh-my-dsh routing', () => {
     expect(prompt).toContain('run_in_background=false')
     expect(prompt).toContain('inspect the auth diff')
     expect(expandRoleShortcut('/review')).toBeUndefined()
+  })
+
+  it('persists routes and keeps ambient overrides higher priority', () => {
+    const home = mkdtempSync(join(tmpdir(), 'oh-my-dsh-'))
+    try {
+      const stored: NodeJS.ProcessEnv = { DSH_HOME: home }
+      persistRoute(stored, 'worker', { provider: 'openrouter', model: 'anthropic/claude-sonnet-4', effort: 'high' })
+
+      const fresh: NodeJS.ProcessEnv = { DSH_HOME: home }
+      applyPersistedRoutes(fresh)
+      expect(getRoute(fresh, 'worker')).toEqual({
+        provider: 'openrouter',
+        model: 'anthropic/claude-sonnet-4',
+        effort: 'high',
+      })
+
+      const ambient: NodeJS.ProcessEnv = {
+        DSH_HOME: home,
+        OMDSH_WORKER_PROVIDER: 'manual',
+        OMDSH_WORKER_MODEL: 'manual-model',
+      }
+      applyPersistedRoutes(ambient)
+      expect(getRoute(ambient, 'worker')).toEqual({ provider: 'manual', model: 'manual-model' })
+
+      persistRoute(stored, 'worker')
+      expect(readPersistedRoutes(stored)).toEqual({})
+    } finally {
+      rmSync(home, { recursive: true, force: true })
+    }
   })
 
   it('sets and clears role routes', () => {
