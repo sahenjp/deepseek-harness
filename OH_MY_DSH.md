@@ -1,5 +1,7 @@
 # oh-my-dsh
 
+English | [日本語](OH_MY_DSH.ja.md)
+
 `oh-my-dsh` is an opinionated launcher layer for this fork. It keeps `dsh` as the only application launcher and applies small profile overlays instead of maintaining a second Harness runtime.
 
 ## Usage
