@@ -69,9 +69,6 @@ The TUI can change routes for subsequent child processes:
 The same routing can be configured before Web or headless startup:
 
 ```sh
-export OMDSH_MAIN_PROVIDER=deepseek-official
-export OMDSH_MAIN_MODEL=deepseek-flash
-
 export OMDSH_SCOUT_PROVIDER=openrouter
 export OMDSH_SCOUT_MODEL=google/gemini-2.5-flash
 
@@ -84,9 +81,9 @@ export OMDSH_REVIEWER_MODEL=openai/gpt-5
 export OMDSH_REVIEWER_EFFORT=high
 ```
 
-Supported role prefixes are `MAIN`, `SCOUT`, `WORKER`, `REVIEWER`, and `ARCHITECT`, each with `_PROVIDER`, `_MODEL`, and optional `_EFFORT`.
+Supported role prefixes are `SCOUT`, `WORKER`, `REVIEWER`, and `ARCHITECT`, each with `_PROVIDER`, `_MODEL`, and optional `_EFFORT`. The main Agent keeps DSH's normal model selection and Web `/model` behavior.
 
-The provider route must already exist in DSH. Third-party routes can be configured through the existing Models / `llm-pi-ai` surface. Changing the main route affects fresh sessions; use `/new` in the TUI after changing it.
+The provider route must already exist in DSH. Third-party routes can be configured through the existing Models / `llm-pi-ai` surface. An unset specialist route inherits the parent Agent's provider and model.
 
 ## Web additions
 
