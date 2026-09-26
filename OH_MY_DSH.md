@@ -32,6 +32,7 @@ Built-in commands:
 /help
 /new
 /session
+/resume <session-id>
 /routes
 /route <role> <provider>/<model> [effort]
 /route <role> inherit
