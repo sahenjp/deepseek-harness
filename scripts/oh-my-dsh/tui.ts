@@ -136,7 +136,7 @@ function printHelp(): void {
     '/route <role> inherit              inherit/default route',
     '/exit                              quit',
     '',
-    'roles: main, scout, worker, reviewer, architect',
+    'roles: scout, worker, reviewer, architect',
   ].join('\n'))
 }
 
@@ -195,9 +195,6 @@ export async function runTui(): Promise<void> {
           if (routeText === 'inherit' || routeText === 'default') setRoute(process.env, role)
           else setRoute(process.env, role, parseRouteSelection(routeText, effort))
           console.log(formatRoutes(process.env).find(row => row.startsWith(role)) ?? role)
-          if (role === 'main' && sessionId !== undefined) {
-            console.log(paint(ansi.dim, 'main route changes apply to a new session; use /new'))
-          }
         } catch (error) {
           console.error(error instanceof Error ? error.message : String(error))
         }
