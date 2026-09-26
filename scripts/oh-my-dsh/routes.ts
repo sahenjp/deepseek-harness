@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 
@@ -125,9 +125,7 @@ export function persistRoute(
   else routes[role] = selection
   const document: RouteDocument = { version: 1, routes }
   mkdirSync(dirname(path), { recursive: true })
-  const temporary = `${path}.tmp-${process.pid}`
-  writeFileSync(temporary, `${JSON.stringify(document, null, 2)}\n`, { mode: 0o600 })
-  renameSync(temporary, path)
+  writeFileSync(path, `${JSON.stringify(document, null, 2)}\n`, { mode: 0o600 })
   setRoute(env, role, selection)
 }
 
