@@ -35,6 +35,7 @@ const ROOT = resolve(import.meta.dirname, '..')
 const CLI = resolve(ROOT, 'apps/cli/src/bin.ts')
 const WEB_PATCH = resolve(ROOT, 'scripts/oh-my-dsh/web.patch.yml')
 const HEADLESS_PATCH = resolve(ROOT, 'scripts/oh-my-dsh/headless.patch.yml')
+const TUI = resolve(ROOT, 'scripts/oh-my-dsh/tui.ts')
 const ROLE_NAMES = ['scout', 'worker', 'reviewer', 'architect'] as const
 
 const ansi = {
@@ -57,7 +58,14 @@ function commonArgs(): string[] {
 }
 
 export function buildOhMyDshInvocation(argv: readonly string[], env: NodeJS.ProcessEnv = process.env): OhMyDshInvocation {
-  const [command = 'web', ...rest] = argv
+  const [command = 'tui', ...rest] = argv
+  if (command === 'tui') {
+    return {
+      command: process.execPath,
+      args: ['--import', 'tsx/esm', TUI, ...rest],
+      env: { ...env },
+    }
+  }
   if (command === 'ask') {
     if (rest.length === 0 || rest.join(' ').trim() === '') throw new Error('ask requires a task')
     return buildHeadlessJsonInvocation(rest.join(' '), undefined, env, false)
@@ -165,12 +173,13 @@ function doctor(): number {
     ['dsh source', existsSync(CLI), CLI],
     ['Web patch', existsSync(WEB_PATCH), WEB_PATCH],
     ['Headless patch', existsSync(HEADLESS_PATCH), HEADLESS_PATCH],
+    ['TUI', existsSync(TUI), TUI],
     ['DeepSeek key', Boolean(process.env.DEEPSEEK_API_KEY), process.env.DEEPSEEK_API_KEY ? 'configured' : 'not configured'],
   ]
   for (const [name, ok, detail] of checks) console.log(`${ok ? 'OK  ' : 'WARN'} ${name}: ${detail}`)
   console.log('\nRoutes')
   for (const route of effectiveRoutes()) console.log(`  ${routeSummary(route)}`)
-  return checks.slice(0, 4).every(([, ok]) => ok) ? 0 : 1
+  return checks.slice(0, 5).every(([, ok]) => ok) ? 0 : 1
 }
 
 function printHelp(): void {
